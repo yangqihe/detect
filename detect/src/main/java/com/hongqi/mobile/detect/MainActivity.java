@@ -1,11 +1,8 @@
 package com.hongqi.mobile.detect;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.hongqi.mobile.detect.base.Logger;
@@ -14,6 +11,8 @@ import com.hongqi.mobile.detect.tflite.TFLiteObjectDetectionAPIModel;
 
 import java.io.IOException;
 import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 

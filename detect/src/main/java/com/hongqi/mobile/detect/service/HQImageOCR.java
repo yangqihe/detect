@@ -5,15 +5,26 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.RectF;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.ChecksumException;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.FormatException;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.RGBLuminanceSource;
+import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
 import com.hongqi.mobile.detect.base.Logger;
 import com.hongqi.mobile.detect.tflite.Classifier;
 import com.hongqi.mobile.detect.tflite.TFLiteObjectDetectionAPIModel;
 import com.hongqi.mobile.detect.utils.ImageUtils;
-
 import java.io.IOException;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 public class HQImageOCR {
 
@@ -77,5 +88,31 @@ public class HQImageOCR {
             }
         }
         return resultString;
+    }
+
+    public static String parseQRcode(Bitmap bmp){
+        //bmp=comp(bmp);//bitmap压缩  如果不压缩的话在低配置的手机上解码很慢
+        int width = bmp.getWidth();
+        int height = bmp.getHeight();
+        int[] pixels = new int[width * height];
+        bmp.getPixels(pixels, 0, width, 0, 0, width, height);
+
+        QRCodeReader reader = new QRCodeReader();
+        Map<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
+        hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);//优化精度
+        hints.put(DecodeHintType.CHARACTER_SET,"utf-8");//解码设置编码方式为：utf-8
+        try {
+            Result result = reader.decode(new BinaryBitmap(
+                    new HybridBinarizer(new RGBLuminanceSource(width, height, pixels))), hints);
+            return result.getText();
+        } catch (NotFoundException e) {
+            Log.i("ansen",""+e.toString());
+            e.printStackTrace();
+        } catch (ChecksumException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

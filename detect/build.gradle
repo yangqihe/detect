@@ -41,4 +41,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation('org.tensorflow:tensorflow-lite:1.13.1')
+    //implementation 'cn.yipianfengye.android:zxing-library:2.2'
+    implementation 'com.github.zxing.zxing:core:zxing-3.4.0'
 }
