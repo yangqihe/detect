@@ -8,23 +8,30 @@ import android.graphics.RectF;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.ChecksumException;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.FormatException;
+import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.multi.MultipleBarcodeReader;
+import com.google.zxing.pdf417.encoder.BarcodeMatrix;
 import com.google.zxing.qrcode.QRCodeReader;
 import com.hongqi.mobile.detect.base.Logger;
 import com.hongqi.mobile.detect.tflite.Classifier;
 import com.hongqi.mobile.detect.tflite.TFLiteObjectDetectionAPIModel;
 import com.hongqi.mobile.detect.utils.ImageUtils;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 public class HQImageOCR {
 
@@ -92,6 +99,7 @@ public class HQImageOCR {
 
     public static String parseQRcode(Bitmap bmp){
         //bmp=comp(bmp);//bitmap压缩  如果不压缩的话在低配置的手机上解码很慢
+
         int width = bmp.getWidth();
         int height = bmp.getHeight();
         int[] pixels = new int[width * height];
@@ -115,4 +123,44 @@ public class HQImageOCR {
         }
         return null;
     }
+
+    public static String parseBarcode(Bitmap bmp){
+        int width = bmp.getWidth();
+        int height = bmp.getHeight();
+        int[] pixels = new int[width * height];
+        bmp.getPixels(pixels, 0, width, 0, 0, width, height);
+
+        Map<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
+        hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);//优化精度
+        hints.put(DecodeHintType.CHARACTER_SET,"utf-8");//解码设置编码方式为：utf-8
+
+        Collection<BarcodeFormat> formats = new ArrayList<BarcodeFormat>();
+        formats.add(BarcodeFormat.UPC_A);
+        formats.add(BarcodeFormat.EAN_13);
+        formats.add(BarcodeFormat.EAN_8);
+        formats.add(BarcodeFormat.CODABAR);
+        formats.add(BarcodeFormat.CODE_39);
+        formats.add(BarcodeFormat.CODE_93);
+        formats.add(BarcodeFormat.CODE_128);
+        formats.add(BarcodeFormat.ITF);
+        formats.add(BarcodeFormat.RSS_14);
+        formats.add(BarcodeFormat.RSS_EXPANDED);
+        hints.put(DecodeHintType.POSSIBLE_FORMATS, formats);
+
+        RGBLuminanceSource source = new RGBLuminanceSource(width, height, pixels);
+        BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(source));
+        MultiFormatReader reader = new MultiFormatReader();
+        reader.setHints(hints);
+        try {
+            Result result = reader.decodeWithState(binaryBitmap);
+            return result.getText();
+        } catch (NotFoundException e) {
+            Log.e("parseBarcode:",""+e.toString());
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
